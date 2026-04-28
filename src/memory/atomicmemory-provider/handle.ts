@@ -81,6 +81,8 @@ export interface AtomicMemoryIngestInput {
 export interface AtomicMemorySearchRequest {
   query: string;
   limit?: number;
+  /** Normalized relevance floor forwarded to core's `threshold` request field. */
+  threshold?: number;
   /** Temporal filter. Honored by `/memories/search` full path; NOT by fast. */
   asOf?: Date;
   retrievalMode?: 'flat' | 'tiered' | 'abstract-aware';
@@ -126,10 +128,14 @@ export interface AtomicMemoryMemory {
 
 export interface AtomicMemorySearchResult {
   memory: AtomicMemoryMemory;
-  /** Composite ranking score from core's retrieval pipeline. */
+  /** Backward-compatible alias for `rankingScore` when core emits it. */
   score: number;
-  /** Raw cosine similarity (when emitted by core). */
+  /** Semantic/vector similarity when emitted by core. */
   similarity?: number;
+  /** Composite ranking/debug score from core's retrieval pipeline. Not normalized. */
+  rankingScore?: number;
+  /** Normalized injection relevance in [0, 1]. */
+  relevance?: number;
   /** AtomicMemory's 0–1 importance weighting on the source memory. */
   importance?: number;
 }

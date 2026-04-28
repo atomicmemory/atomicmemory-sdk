@@ -123,13 +123,18 @@ export interface SearchRequest {
 export interface SearchResult {
   memory: Memory;
   /**
-   * Raw backend score, passed through without transformation.
-   * Semantics depend on the provider:
-   * - Mem0 OSS (local): distance-like — lower is better (0 = exact match).
-   * - Mem0 hosted: similarity-like — higher is better.
-   * Consumers that need a uniform semantic should apply their own normalization.
+   * Backward-compatible provider score.
+   * For AtomicMemory this is the composite ranking score (`rankingScore`) and
+   * is not normalized. New consumers should prefer the explicit fields below.
+   * Other providers preserve their historical score semantics.
    */
   score: number;
+  /** Semantic/vector similarity when the provider exposes it. Higher is better. */
+  similarity?: number;
+  /** Composite ranking/debug score. Not guaranteed to be normalized. */
+  rankingScore?: number;
+  /** Normalized injection relevance in [0, 1], suitable for threshold checks. */
+  relevance?: number;
 }
 
 export interface SearchResultPage {

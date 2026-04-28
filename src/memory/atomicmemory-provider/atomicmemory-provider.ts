@@ -138,6 +138,7 @@ export class AtomicMemoryProvider
       user_id: request.scope.user,
       query: request.query,
       limit: request.limit,
+      threshold: request.threshold,
       namespace_scope: request.scope.namespace,
     };
 
@@ -292,6 +293,7 @@ export class AtomicMemoryProvider
         user_id: request.scope.user,
         query: request.query,
         limit: request.limit,
+        threshold: request.threshold,
         namespace_scope: request.scope.namespace,
         retrieval_mode: mapPackageFormat(request.format),
         token_budget: request.tokenBudget,
@@ -330,6 +332,7 @@ export class AtomicMemoryProvider
           user_id: request.scope.user,
           query: request.query,
           limit: request.limit,
+          threshold: request.threshold,
           as_of: request.asOf.toISOString(),
           namespace_scope: request.scope.namespace,
         };
