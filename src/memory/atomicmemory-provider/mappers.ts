@@ -20,7 +20,10 @@ interface RawMemory {
   id: string;
   content: string;
   similarity?: number;
+  semantic_similarity?: number;
   score?: number;
+  ranking_score?: number;
+  relevance?: number;
   importance?: number;
   source_site?: string;
   /** Present on list responses; not on search responses today. */
@@ -102,9 +105,15 @@ function buildMetadata(raw: RawMemory): Memory['metadata'] {
 }
 
 export function toSearchResult(raw: RawMemory, scope: Scope): SearchResult {
+  const similarity = raw.semantic_similarity ?? raw.similarity;
+  const rankingScore = raw.ranking_score ?? raw.score;
+  const relevance = raw.relevance;
   return {
     memory: toMemory(raw, scope),
-    score: raw.score ?? raw.similarity ?? 0,
+    score: rankingScore ?? similarity ?? 0,
+    ...(similarity !== undefined ? { similarity } : {}),
+    ...(rankingScore !== undefined ? { rankingScore } : {}),
+    ...(relevance !== undefined ? { relevance } : {}),
   };
 }
 

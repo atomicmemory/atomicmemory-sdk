@@ -110,12 +110,19 @@ describe('search', () => {
     const provider = createProvider();
     mockFetch.mockResolvedValueOnce(
       jsonResponse({
-        memories: [{ id: 's1', content: 'fact', score: 0.95 }],
+        memories: [{
+          id: 's1',
+          content: 'fact',
+          semantic_similarity: 0.84,
+          ranking_score: 1.25,
+          relevance: 0.84,
+          score: 1.25,
+        }],
         count: 1,
       })
     );
 
-    const request: SearchRequest = { query: 'test', scope: VALID_SCOPE, limit: 5 };
+    const request: SearchRequest = { query: 'test', scope: VALID_SCOPE, limit: 5, threshold: 0.8 };
     const page = await provider.search(request);
 
     const [url, init] = mockFetch.mock.calls[0];
@@ -125,8 +132,12 @@ describe('search', () => {
     expect(body.query).toBe('test');
     expect(body.user_id).toBe('u1');
     expect(body.limit).toBe(5);
+    expect(body.threshold).toBe(0.8);
     expect(page.results).toHaveLength(1);
-    expect(page.results[0].score).toBe(0.95);
+    expect(page.results[0].score).toBe(1.25);
+    expect(page.results[0].similarity).toBe(0.84);
+    expect(page.results[0].rankingScore).toBe(1.25);
+    expect(page.results[0].relevance).toBe(0.84);
     expect(page.results[0].memory.id).toBe('s1');
   });
 });

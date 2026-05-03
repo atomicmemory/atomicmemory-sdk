@@ -205,6 +205,7 @@ describe('atomicmemory.search', () => {
     const request: AtomicMemorySearchRequest = {
       query: 'q',
       limit: 5,
+      threshold: 0.72,
       asOf: new Date('2026-04-01T00:00:00Z'),
       retrievalMode: 'flat',
       configOverride: { hybridSearchEnabled: true, mmrLambda: 0.8 },
@@ -217,6 +218,7 @@ describe('atomicmemory.search', () => {
       user_id: 'u1',
       query: 'q',
       limit: 5,
+      threshold: 0.72,
       as_of: '2026-04-01T00:00:00.000Z',
       retrieval_mode: 'flat',
       config_override: { hybridSearchEnabled: true, mmrLambda: 0.8 },
@@ -570,7 +572,7 @@ describe('list() rejects user-scope-only options on workspace scope', () => {
 });
 
 describe('search result field population', () => {
-  it('populates similarity + importance + score on each result (not just memory.metadata)', async () => {
+  it('populates explicit score semantics on each result (not just memory.metadata)', async () => {
     mockFetch.mockResolvedValueOnce(
       jsonResponse({
         count: 1,
@@ -580,7 +582,10 @@ describe('search result field population', () => {
             id: 'm1',
             content: 'x',
             similarity: 0.42,
-            score: 1.23,
+            semantic_similarity: 0.43,
+            score: 1.11,
+            ranking_score: 1.23,
+            relevance: 0.43,
             importance: 0.7,
           },
         ],
@@ -590,11 +595,13 @@ describe('search result field population', () => {
     const page = await handle.search({ query: 'q' }, USER_SCOPE);
     const result = page.results[0];
     expect(result.score).toBe(1.23);
-    expect(result.similarity).toBe(0.42);
+    expect(result.similarity).toBe(0.43);
+    expect(result.rankingScore).toBe(1.23);
+    expect(result.relevance).toBe(0.43);
     expect(result.importance).toBe(0.7);
   });
 
-  it('leaves similarity and importance undefined when core omits them', async () => {
+  it('leaves explicit optional fields undefined when core omits them', async () => {
     mockFetch.mockResolvedValueOnce(
       jsonResponse({
         count: 1,
@@ -605,6 +612,8 @@ describe('search result field population', () => {
     const handle = createHandle();
     const page = await handle.search({ query: 'q' }, USER_SCOPE);
     expect(page.results[0].similarity).toBeUndefined();
+    expect(page.results[0].rankingScore).toBe(0.5);
+    expect(page.results[0].relevance).toBeUndefined();
     expect(page.results[0].importance).toBeUndefined();
     expect(page.results[0].score).toBe(0.5);
   });

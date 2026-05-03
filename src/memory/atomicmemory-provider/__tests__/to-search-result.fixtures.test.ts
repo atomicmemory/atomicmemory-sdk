@@ -27,7 +27,10 @@ interface RawSearchMemory {
   id: string;
   content: string;
   similarity?: number;
+  semantic_similarity?: number;
   score?: number;
+  ranking_score?: number;
+  relevance?: number;
   importance?: number;
   source_site?: string;
   created_at?: string;
@@ -66,6 +69,15 @@ describe.each(fixtures)('toSearchResult — fixture replay ($label)', ({ raw, ma
       const result = toSearchResult(row, SCOPE);
       expect(typeof result.score).toBe('number');
       expect(Number.isFinite(result.score)).toBe(true);
+    }
+  });
+
+  it('semantic contract: explicit score semantics are exposed when core emits them', () => {
+    for (const row of rawResponse.memories) {
+      const result = toSearchResult(row, SCOPE);
+      expect(result.similarity).toBe(row.semantic_similarity ?? row.similarity);
+      expect(result.rankingScore).toBe(row.ranking_score ?? row.score);
+      expect(result.relevance).toBe(row.relevance);
     }
   });
 

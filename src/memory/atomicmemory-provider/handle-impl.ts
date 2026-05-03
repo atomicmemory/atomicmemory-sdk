@@ -297,6 +297,7 @@ async function postSearch(
     query: request.query,
   };
   if (request.limit !== undefined) body.limit = request.limit;
+  if (request.threshold !== undefined) body.threshold = request.threshold;
   if (request.asOf) body.as_of = request.asOf.toISOString();
   if (request.retrievalMode) body.retrieval_mode = request.retrievalMode;
   if (request.tokenBudget !== undefined) body.token_budget = request.tokenBudget;
@@ -321,7 +322,10 @@ interface RawMemoryResponse {
   id: string;
   content?: string;
   similarity?: number;
+  semantic_similarity?: number;
   score?: number;
+  ranking_score?: number;
+  relevance?: number;
   importance?: number;
   source_site?: string;
   source_url?: string;
@@ -395,11 +399,16 @@ function toAtomicMemorySearchResult(
   raw: RawMemoryResponse,
   scope: MemoryScope,
 ): AtomicMemorySearchResult {
+  const similarity = raw.semantic_similarity ?? raw.similarity;
+  const rankingScore = raw.ranking_score ?? raw.score;
+  const relevance = raw.relevance;
   const result: AtomicMemorySearchResult = {
     memory: toAtomicMemoryMemory(raw, scope),
-    score: raw.score ?? raw.similarity ?? 0,
+    score: rankingScore ?? similarity ?? 0,
   };
-  if (raw.similarity !== undefined) result.similarity = raw.similarity;
+  if (similarity !== undefined) result.similarity = similarity;
+  if (rankingScore !== undefined) result.rankingScore = rankingScore;
+  if (relevance !== undefined) result.relevance = relevance;
   if (raw.importance !== undefined) result.importance = raw.importance;
   return result;
 }
